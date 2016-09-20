@@ -43,6 +43,3 @@ DEPENDENCIES
   single_cov
   unicorn
   unicorn_wrangler!
-
-BUNDLED WITH
-   1.12.5

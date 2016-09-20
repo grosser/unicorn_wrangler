@@ -108,18 +108,18 @@ describe UnicornWrangler do
 
     it "kill on too much memory" do
       expect(wrangler).to receive(:kill)
-      expect(wrangler.call(250, 100)).to eq nil
+      wrangler.call(250, 100)
     end
 
     it "does not kill/check on every request" do
       expect(wrangler).to_not receive(:kill)
-      expect(wrangler.call(1, 100)).to eq nil
+      wrangler.call(1, 100)
     end
 
     it "does not kill on too little memory" do
       expect(wrangler).to receive(:used_memory).and_return(0)
       expect(wrangler).to_not receive(:kill)
-      expect(wrangler.call(250, 100)).to eq nil
+      wrangler.call(250, 100)
     end
   end
 
@@ -128,12 +128,12 @@ describe UnicornWrangler do
 
     it "kills on too many requests" do
       expect(wrangler).to receive(:kill)
-      expect(wrangler.call(1000, 100)).to eq nil
+      wrangler.call(1000, 100)
     end
 
     it "does not kill on too few requests" do
       expect(wrangler).to_not receive(:kill)
-      expect(wrangler.call(999, 100)).to eq nil
+      wrangler.call(999, 100)
     end
   end
 
@@ -152,7 +152,7 @@ describe UnicornWrangler do
       expect(stats).to receive(:increment)
       expect(stats).to receive(:timing)
 
-      expect(wrangler.call(1, 1000)).to eq true
+      wrangler.call(1, 1000)
       expect(GC.enable).to eq(true) # was disabled again
     end
   end

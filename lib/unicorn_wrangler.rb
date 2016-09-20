@@ -37,9 +37,7 @@ module UnicornWrangler
       @request_time += Benchmark.realtime { returned = yield }
       returned
     ensure
-      if @handlers.map { |handler| handler.call(@requests, @request_time) }.any?
-        @request_time = 0
-      end
+      @handlers.each { |handler| handler.call(@requests, @request_time) }
     end
   end
 
@@ -129,19 +127,25 @@ module UnicornWrangler
       @max_request_time = max_request_time
       GC.disable
       @logger.info "Garbage collecting after #{@max_request_time}s of request processing time"
+      @gc_ran_at = 0
     end
 
     def call(_requests, request_time)
-      return unless request_time >= @max_request_time
+      time_since_last_gc = request_time - @gc_ran_at
+      return unless time_since_last_gc >= @max_request_time
+      @gc_ran_at = request_time
+
       time = Benchmark.realtime do
         GC.enable
         GC.start
         GC.disable
-      end * 1000
+      end
+
+      time = (time * 1000).round # s -> ms
       @stats.increment("#{STATS_NAMESPACE}.oobgc.runs")
       @stats.timing("#{STATS_NAMESPACE}.oobgc.time", time)
-      @logger.info "Garbage collecting: took #{time.round}ms"
-      true # reset @request_time in UnicornManager ... kind of clumsy ... maybe handle counting in here
+      @logger.info "Garbage collecting: took #{time}ms"
+      true
     end
   end
 end
