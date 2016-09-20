@@ -17,8 +17,8 @@ Each handler can be  deactivated by setting it to `false`.
 require 'unicorn_wrangler'
 UnicornWrangler.setup(
   kill_after_requests: 10000,
-  gc_after_request_time: 10,
-  max_memory: {percent: 70, check_ever: 250},
+  kill_on_too_much_memory: {max: 70, check_ever: 250}, 
+  gc_after_request_time: 10, # seconds
   stats: StatsD.new,
   logger: set.fetch(:logger)
 )
@@ -30,9 +30,7 @@ end
 ```
 
 ## TODO:
- - kill workers instead of the whole server
  - support other statsd flavors
- - request time reset behavior and statsd logging makes little sense ... only reset internally and do math to figure out total 
 
 ## Alternatives
  - [gctools](https://github.com/tmm1/gctools) more efficient GC handling, but needs a native extension / is more complex

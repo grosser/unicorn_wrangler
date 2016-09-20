@@ -1,6 +1,6 @@
 require "spec_helper"
 
-SingleCov.covered! uncovered: 2 # uncovered OS specific code
+SingleCov.covered!
 
 module Unicorn
   class HttpServer
@@ -85,7 +85,7 @@ describe UnicornWrangler do
       UnicornWrangler.setup(
         kill_after_requests: false,
         gc_after_request_time: false,
-        max_memory: false,
+        kill_on_too_much_memory: false,
         logger: logger,
         stats: stats
       )
@@ -103,10 +103,10 @@ describe UnicornWrangler do
     end
   end
 
-  describe UnicornWrangler::MaxMemoryKiller do
-    let(:wrangler) { described_class.new(logger, stats, percent: 0) }
+  describe UnicornWrangler::OutOfMemoryKiller do
+    let(:wrangler) { described_class.new(logger, stats, max: 0) }
 
-    it "kill on too much memory" do
+    it "kill on too little free memory" do
       expect(wrangler).to receive(:kill)
       wrangler.call(250, 100)
     end
@@ -123,7 +123,7 @@ describe UnicornWrangler do
     end
   end
 
-  describe UnicornWrangler::RequestTimeKiller do
+  describe UnicornWrangler::RequestKiller do
     let(:wrangler) { described_class.new(logger, stats, 1000) }
 
     it "kills on too many requests" do

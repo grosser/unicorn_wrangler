@@ -16,14 +16,14 @@ module UnicornWrangler
     def setup(
       kill_after_requests: 10000,
       gc_after_request_time: 10,
-      max_memory: {},
+      kill_on_too_much_memory: {},
       logger:,
       stats: # provide a statsd client with your apps namespace to collect stats
     )
       logger.info "Sending stats to under #{stats.namespace}.#{STATS_NAMESPACE}"
       @handlers = []
-      @handlers << RequestTimeKiller.new(logger, stats, kill_after_requests) if kill_after_requests
-      @handlers << MaxMemoryKiller.new(logger, stats, max_memory) if max_memory
+      @handlers << RequestKiller.new(logger, stats, kill_after_requests) if kill_after_requests
+      @handlers << OutOfMemoryKiller.new(logger, stats, kill_on_too_much_memory) if kill_on_too_much_memory
       @handlers << OutOfBandGC.new(logger, stats, gc_after_request_time) if gc_after_request_time
       Unicorn::HttpServer.prepend UnicornExtension
     end
@@ -76,35 +76,22 @@ module UnicornWrangler
     end
   end
 
-  class MaxMemoryKiller < Killer
-    def initialize(logger, stats, percent: 70, check_every: 250)
+  class OutOfMemoryKiller < Killer
+    def initialize(logger, stats, max: 20, check_every: 250)
       super(logger, stats)
-      raise ArgumentError, "Max memory can never be >= 100%" if percent >= 100
-      @max_memory = (system_memory * (percent / 100.0)).round
+      @max = max
       @check_every = check_every
-      @logger.info "Killing workers when they use more than #{@max_memory}MB of memory (#{percent}% of system memory)"
+      @logger.info "Killing workers when using more than #{@max}MB"
     end
 
     def call(requests, request_time)
       return unless (requests % @check_every).zero? # avoid overhead of checking memory too often
-      return unless (memory = used_memory) > @max_memory
+      return unless (memory = used_memory) > @max
       kill :memory, memory, requests, request_time
-    end
-
-    private
-
-    def system_memory
-      if RbConfig::CONFIG.fetch('host_os').start_with?('darwin')
-        `sysctl hw.memsize`[/\d+/].to_i / (1024 * 1024)
-      else
-        # check docker (cgroup) or normal location
-        line = `grep hierarchical_memory_limit /sys/fs/cgroup/memory/memory.stat || grep MemTotal /proc/meminfo`
-        line[/\d+/].to_i / 1024
-      end
     end
   end
 
-  class RequestTimeKiller < Killer
+  class RequestKiller < Killer
     def initialize(logger, stats, max_requests)
       super(logger, stats)
       @max_requests = max_requests

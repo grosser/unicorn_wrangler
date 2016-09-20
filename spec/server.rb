@@ -14,7 +14,7 @@ killer = ENV['TEST_KILLER']
 UnicornWrangler.setup(
   gc_after_request_time: 0.1,
   kill_after_requests: killer == 'requests' && 5,
-  max_memory: killer == 'memory' && {percent: 0, check_every: 3},
+  kill_on_too_much_memory: killer == 'memory' && {max: 0, check_every: 3},
   stats: stats,
   logger: log
 )
