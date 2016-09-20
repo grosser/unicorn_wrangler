@@ -80,8 +80,7 @@ module UnicornWrangler
     def initialize(logger, stats, percent: 70, check_every: 250)
       super(logger, stats)
       raise ArgumentError, "Max memory can never be >= 100%" if percent >= 100
-      available_memory = system_memory
-      @max_memory = (available_memory * (percent / 100.0)).round
+      @max_memory = (system_memory * (percent / 100.0)).round
       @check_every = check_every
       @logger.info "Killing workers when they use more than #{@max_memory}MB of memory (#{percent}% of system memory)"
     end
@@ -98,7 +97,9 @@ module UnicornWrangler
       if RbConfig::CONFIG.fetch('host_os').start_with?('darwin')
         `sysctl hw.memsize`[/\d+/].to_i / (1024 * 1024)
       else
-        `grep MemTotal /proc/meminfo`[/\d+/].to_i / 1024
+        # check docker (cgroup) or normal location
+        line = `grep hierarchical_memory_limit /sys/fs/cgroup/memory/memory.stat || grep MemTotal /proc/meminfo`
+        line[/\d+/].to_i / 1024
       end
     end
   end

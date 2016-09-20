@@ -1,6 +1,6 @@
 require "spec_helper"
 
-SingleCov.covered! uncovered: 1 # uncovered OS specific code
+SingleCov.covered! uncovered: 2 # uncovered OS specific code
 
 module Unicorn
   class HttpServer
