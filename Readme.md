@@ -17,7 +17,7 @@ Each handler can be  deactivated by setting it to `false`.
 require 'unicorn_wrangler'
 UnicornWrangler.setup(
   kill_after_requests: 10000,
-  kill_on_too_much_memory: {max: 70, check_ever: 250}, 
+  kill_on_too_much_memory: {max: 70, check_every: 250}, 
   gc_after_request_time: 10, # seconds
   stats: StatsD.new,
   logger: set.fetch(:logger)

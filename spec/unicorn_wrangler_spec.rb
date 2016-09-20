@@ -91,6 +91,16 @@ describe UnicornWrangler do
       )
       expect(log.string.split("\n").size).to eq 1
     end
+
+    it "can run without stats" do
+      UnicornWrangler.setup(
+        kill_after_requests: false,
+        gc_after_request_time: false,
+        kill_on_too_much_memory: false,
+        logger: logger
+      )
+      expect(log.string.split("\n").size).to eq 0
+    end
   end
 
   describe ".perform_request" do
