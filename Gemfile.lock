@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    unicorn_wrangler (0.1.0)
+    unicorn_wrangler (0.1.1)
 
 GEM
   remote: https://rubygems.org/
@@ -45,4 +45,4 @@ DEPENDENCIES
   unicorn_wrangler!
 
 BUNDLED WITH
-   1.12.5
+   1.13.6
