@@ -62,7 +62,7 @@ module UnicornWrangler
       if @stats
         @stats.increment("#{STATS_NAMESPACE}.kill.#{reason}")
 
-        @stats.histogram("#{STATS_NAMESPACE}.kill.memory", request_time)
+        @stats.histogram("#{STATS_NAMESPACE}.kill.memory", memory)
         @stats.histogram("#{STATS_NAMESPACE}.kill.total_requests", requests)
         @stats.histogram("#{STATS_NAMESPACE}.kill.total_request_time", request_time)
       end
