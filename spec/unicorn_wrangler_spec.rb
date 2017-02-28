@@ -129,6 +129,7 @@ describe UnicornWrangler do
     it "does not kill on too little memory" do
       expect(wrangler).to receive(:used_memory).and_return(0)
       expect(wrangler).to_not receive(:kill)
+      expect(stats).to receive(:histogram)
       wrangler.call(250, 100)
     end
   end

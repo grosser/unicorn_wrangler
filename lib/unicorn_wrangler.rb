@@ -67,7 +67,7 @@ module UnicornWrangler
         @stats.histogram("#{STATS_NAMESPACE}.kill.total_request_time", request_time)
       end
 
-      @logger.info "Killing unicorn worker ##{Process.pid} for #{reason}. Requests: #{requests}, Time: #{request_time}, Memory: #{memory}MB"
+      report_status "Killing", reason, memory, requests, request_time
 
       Process.kill(:QUIT, Process.pid)
     end
@@ -75,6 +75,10 @@ module UnicornWrangler
     # expensive, do not run on every request
     def used_memory
       `ps -o rss= -p #{Process.pid}`.to_i / 1024
+    end
+
+    def report_status(status, reason, memory, requests, request_time)
+      @logger.info "#{status} unicorn worker ##{Process.pid} for #{reason}. Requests: #{requests}, Time: #{request_time}, Memory: #{memory}MB"
     end
   end
 
@@ -88,8 +92,13 @@ module UnicornWrangler
 
     def call(requests, request_time)
       return unless (requests % @check_every).zero? # avoid overhead of checking memory too often
-      return unless (memory = used_memory) > @max
-      kill :memory, memory, requests, request_time
+      memory = used_memory
+      if memory > @max
+        kill :memory, memory, requests, request_time
+      else
+        @stats.histogram("#{STATS_NAMESPACE}.keep.memory", memory)
+        report_status "Keeping", :memory, memory, requests, request_time
+      end
     end
   end
 
