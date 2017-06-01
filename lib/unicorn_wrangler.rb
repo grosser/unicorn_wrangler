@@ -60,7 +60,7 @@ module UnicornWrangler
     # Possible issue: kill_worker is not meant to kill the server pid ... might have strange side effects
     def kill(reason, memory, requests, request_time)
       if @stats
-        @stats.increment("#{STATS_NAMESPACE}.kill.#{reason}")
+        @stats.increment("#{STATS_NAMESPACE}.killed", tags: ["reason:#{reason}"])
 
         @stats.histogram("#{STATS_NAMESPACE}.kill.memory", memory)
         @stats.histogram("#{STATS_NAMESPACE}.kill.total_requests", requests)
