@@ -69,7 +69,7 @@ module UnicornWrangler
 
       report_status "Killing", reason, memory, requests, request_time
 
-      Process.kill(:QUIT, Process.pid)
+      Process.kill(:TERM, Process.pid)
     end
 
     # expensive, do not run on every request

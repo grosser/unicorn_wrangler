@@ -182,7 +182,7 @@ describe UnicornWrangler do
         expect(stats).to receive(:increment)
         expect(stats).to receive(:histogram).exactly(3)
 
-        expect(Process).to receive(:kill).with(:QUIT, Process.pid)
+        expect(Process).to receive(:kill).with(:TERM, Process.pid)
         wrangler.send(:kill, :foobar, 1, 2, 3)
       end
     end
