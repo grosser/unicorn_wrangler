@@ -132,6 +132,12 @@ describe UnicornWrangler do
       expect(stats).to receive(:histogram)
       wrangler.call(250, 100)
     end
+
+    it "does not fail without stats" do
+      wrangler = described_class.new(logger, nil, max: 0)
+      expect(wrangler).to receive(:used_memory).and_return(0)
+      wrangler.call(250, 100)
+    end
   end
 
   describe UnicornWrangler::RequestKiller do

@@ -96,7 +96,7 @@ module UnicornWrangler
       if memory > @max
         kill :memory, memory, requests, request_time
       else
-        @stats.histogram("#{STATS_NAMESPACE}.keep.memory", memory)
+        @stats.histogram("#{STATS_NAMESPACE}.keep.memory", memory) if @stats
         report_status "Keeping", :memory, memory, requests, request_time
       end
     end
