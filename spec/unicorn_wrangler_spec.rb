@@ -157,12 +157,6 @@ describe UnicornWrangler do
   describe UnicornWrangler::OutOfBandGC do
     let(:wrangler) { described_class.new(logger, stats, 1000) }
 
-    it "disables GC" do
-      GC.enable
-      wrangler
-      expect(GC.enable).to eq(true) # was disabled
-    end
-
     it "runs GC after too much request time" do
       expect(GC).to receive(:start)
 
