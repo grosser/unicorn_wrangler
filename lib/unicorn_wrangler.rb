@@ -124,7 +124,6 @@ module UnicornWrangler
       @logger = logger
       @stats = stats
       @max_request_time = max_request_time
-      GC.disable
       @logger.info "Garbage collecting after #{@max_request_time}s of request processing time"
       @gc_ran_at = 0
     end
