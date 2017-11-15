@@ -45,6 +45,14 @@ module UnicornWrangler
     def process_client(*)
       UnicornWrangler.perform_request { super }
     end
+
+    # run GC after we finished loading out app so forks inherit a clean GC environment
+    def build_app!
+      super
+    ensure
+      GC.start
+      GC.disable
+    end
   end
 
   class Killer

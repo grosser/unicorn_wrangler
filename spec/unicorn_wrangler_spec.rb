@@ -6,6 +6,9 @@ module Unicorn
   class HttpServer
     def process_client(_client)
     end
+
+    def build_app!
+    end
   end
 end
 
@@ -188,12 +191,25 @@ describe UnicornWrangler do
       def process_client(client)
         123
       end
+
+      def build_app!
+        123
+      end
     end
 
     describe "#process_client" do
       it "calls wrangler" do
         expect(UnicornWrangler).to receive(:perform_request).and_return(123)
         expect(Foobar.new.process_client(:foo)).to eq(123)
+      end
+    end
+
+    describe "#build_app!" do
+      it "disables GC" do
+        GC.enable
+        expect(GC).to receive(:start)
+        expect(Foobar.new.build_app!).to eq 123
+        expect(GC.enable).to eq true # was off ?
       end
     end
   end
