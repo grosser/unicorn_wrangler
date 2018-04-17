@@ -17,6 +17,7 @@ module UnicornWrangler
       kill_after_requests: 10000,
       gc_after_request_time: 10,
       kill_on_too_much_memory: {},
+      map_term_to_quit: false,
       logger:,
       stats: nil # provide a statsd client with your apps namespace to collect stats
     )
@@ -25,6 +26,27 @@ module UnicornWrangler
       @handlers << RequestKiller.new(logger, stats, kill_after_requests) if kill_after_requests
       @handlers << OutOfMemoryKiller.new(logger, stats, kill_on_too_much_memory) if kill_on_too_much_memory
       @handlers << OutOfBandGC.new(logger, stats, gc_after_request_time) if gc_after_request_time
+
+      @hooks = {}
+      if map_term_to_quit
+        # - on heroku & kubernetes all processes get TERM, so we need to trap in master and worker
+        # - trapping has to be done in the before_fork since unicorn sets up it's own traps on start
+        # - we cannot write to logger inside of a trap, so need to spawn a new Thread
+        # - manual test: add a slow route + rails s + curl + pkill -TERM -f 'unicorn master' - request finished?
+        @hooks[:before_fork] = -> do
+          Signal.trap :TERM do
+            Thread.new { logger.info 'master intercepting TERM and sending myself QUIT instead' }
+            Process.kill :QUIT, Process.pid
+          end
+        end
+
+        @hooks[:after_fork] = ->(*) do
+          Signal.trap :TERM do
+            Thread.new { logger.info 'worker intercepting TERM and doing nothing. Wait for master to send QUIT' }
+          end
+        end
+      end
+
       Unicorn::HttpServer.prepend UnicornExtension
     end
 
@@ -39,9 +61,26 @@ module UnicornWrangler
     ensure
       @handlers.each { |handler| handler.call(@requests, @request_time) }
     end
+
+    def perform_hook(name)
+      if hook = @hooks[name]
+        hook.call
+      end
+    end
   end
 
   module UnicornExtension
+    # call our hook and the users hook since only a single hook can be configured at a time
+    # we need to call super so the @<hook> variables get set and unset properly in after_fork to not leak memory
+    [:after_fork, :before_fork].each do |hook|
+      define_method("#{hook}=") do |value|
+        super(->(*args) do
+          UnicornWrangler.perform_hook(hook)
+          value.call(*args)
+        end)
+      end
+    end
+
     def process_client(*)
       UnicornWrangler.perform_request { super }
     end
