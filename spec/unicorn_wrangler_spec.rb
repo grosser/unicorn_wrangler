@@ -36,7 +36,7 @@ describe UnicornWrangler do
         sleep 0.1 # sleep for log to flush
         File.read(log)
       ensure
-        Process.kill(:TERM, File.read('spec/unicorn.pid').to_i)
+        Process.kill(:TERM, Integer(File.read('spec/unicorn.pid')))
         File.unlink(log)
       end
     end
@@ -169,6 +169,16 @@ describe UnicornWrangler do
       wrangler.call(1, 1000)
       expect(GC.enable).to eq(true) # was disabled again
     end
+
+    it "does not run GC after too little request time" do
+      expect(GC).to_not receive(:start)
+      wrangler.call(1, 10)
+    end
+
+    it "works without stats" do
+      wrangler.instance_variable_set(:@stats, nil)
+      wrangler.call(1, 1000)
+    end
   end
 
   describe UnicornWrangler::Killer do
@@ -179,6 +189,12 @@ describe UnicornWrangler do
         expect(stats).to receive(:increment)
         expect(stats).to receive(:histogram).exactly(3)
 
+        expect(Process).to receive(:kill).with(:TERM, Process.pid)
+        wrangler.send(:kill, :foobar, 1, 2, 3)
+      end
+
+      it "works without stats" do
+        wrangler.instance_variable_set(:@stats, nil)
         expect(Process).to receive(:kill).with(:TERM, Process.pid)
         wrangler.send(:kill, :foobar, 1, 2, 3)
       end

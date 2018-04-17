@@ -1,4 +1,4 @@
-require 'statsd'
+require 'datadog/statsd'
 require 'unicorn_wrangler'
 
 pid 'unicorn.pid'
@@ -8,7 +8,7 @@ stdout_path log # make puts debugging visible
 log = Logger.new('unicorn.log')
 logger log
 
-stats = Statsd.new(namespec: 'testing')
+stats = Datadog::Statsd.new
 killer = ENV['TEST_KILLER']
 
 UnicornWrangler.setup(
