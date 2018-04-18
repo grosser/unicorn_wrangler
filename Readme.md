@@ -1,4 +1,8 @@
-Unicorn: out of band GC / restart on max memory bloat / restart after X requests
+Unicorn helpers for: 
+ - out of band GC 
+ - restart on max memory bloat
+ - restart after X requests
+ - not killing active requests when stopping (map TERM into QUIT see [heroku docs](https://devcenter.heroku.com/articles/rails-unicorn#signal-handling))
 
 Install
 =======
@@ -22,6 +26,7 @@ UnicornWrangler.setup(
     check_every: 250 # requests
   },
   gc_after_request_time: 10, # seconds
+  map_term_to_quit: true, # finish requests before stopping
   stats: StatsD.new,
   logger: set.fetch(:logger)
 )
