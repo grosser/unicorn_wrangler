@@ -25,3 +25,7 @@ UnicornWrangler.handlers << -> (a,b) { log.info "Custom handler" }
 if ENV["BEFORE_HOOK"]
   before_fork { |a, b| puts "GOT BEFORE_HOOK" }
 end
+
+if ENV["ALWAYS_KILL"]
+  UnicornWrangler.handlers << -> (a,b) { UnicornWrangler.kill_worker }
+end

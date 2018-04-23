@@ -26,16 +26,31 @@ UnicornWrangler.setup(
     check_every: 250 # requests
   },
   gc_after_request_time: 10, # seconds
-  map_term_to_quit: true, # finish requests before stopping
+  map_term_to_quit: true, # finish requests before stopping, disables TERM handling on workers
   stats: StatsD.new,
   logger: set.fetch(:logger)
 )
 
 # Do additional handlers
 UnicornWrangler.handlers << -> (requests, request_time) do
-  ... do something ...
+  ... do something / UnicornWrangler.kill_worker ...
 end
 ```
+
+## map_term_to_quit
+
+Unicorn has 2 shutdown modes: SIGTERM = "Kill now" or SIGQUIT = "Wait for requests to finish".
+Ideally send the master a SIGQUIT and then let it take care of things and don't use `map_term_to_quit`.
+
+In Kubernetes or Heroku the default shutdown behavior is to send a SIGTERM to all running processes (master and workers).
+To make a unicorn app able to still wait for requests `map_term_to_quit`:
+
+ - traps SIGTERM in master and sends a SIGQUIT instead  
+ - traps SIGTERM in worker and ignores it  
+
+Ignoring SIGTERM in the worker prevents the worker from getting killed by other means too, like the unicorns internal
+`kill_worker` which is called from the master. To kill a worker from inside the worker use `UnicornWrangler.kill_worker`
+which will disable the trap unicorn_wrangler sets.
 
 ## TODO:
  - support other statsd flavors
