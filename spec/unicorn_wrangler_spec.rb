@@ -20,12 +20,15 @@ end
 
 module UnicornWrangler::Signal
   class << self
+    attr_accessor :old_called
+
     def trap(_sig, &block)
-      (@trapped ||= []) << block
+      trapped << block
+      -> { self.old_called = true }
     end
 
     def trapped
-      @trapped
+      @trapped ||= []
     end
   end
 end
@@ -38,6 +41,9 @@ describe UnicornWrangler do
   before do
     UnicornWrangler.instance_variable_set(:@hooks, nil)
     UnicornWrangler.instance_variable_set(:@handlers, nil)
+    UnicornWrangler.sending_myself_term = false
+    UnicornWrangler::Signal.old_called = false
+    UnicornWrangler::Signal.trapped.clear
   end
 
   it "has a VERSION" do
@@ -141,6 +147,15 @@ describe UnicornWrangler do
           expect(client.value).to eq "Foo #{worker}"
         end
         expect(log).to include "worker=0 ready"
+        expect(log).to include "worker intercepting"
+      end
+    end
+
+    it "stops when a handler decides it is time to stop" do
+      with_env ALWAYS_KILL: 'true', MAP_TERM_TO_QUIT: 'true' do
+        log = server { 2.times { expect(get).to include("Foo") } }
+        expect(log.scan("reaped").size).to eq 2
+        expect(log).to_not include "worker intercepting"
       end
     end
   end
@@ -181,6 +196,17 @@ describe UnicornWrangler do
       UnicornWrangler.perform_hook :after_fork
       UnicornWrangler::Signal.trapped.each { |h| h.call 1, 2 }
       sleep 0.1 # let logger thread finish
+    end
+
+    it "calls super for term when sending it to myself" do
+      UnicornWrangler.setup(logger: logger, map_term_to_quit: true)
+      expect(Process).to_not receive(:kill)
+      expect(logger).to_not receive(:info)
+      UnicornWrangler.perform_hook :after_fork
+
+      UnicornWrangler.sending_myself_term = 111
+      UnicornWrangler::Signal.trapped.each { |h| h.call 1, 2 }
+      expect(UnicornWrangler::Signal.old_called).to eq true
     end
   end
 

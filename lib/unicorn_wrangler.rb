@@ -9,6 +9,7 @@ module UnicornWrangler
 
   class << self
     attr_reader :handlers
+    attr_accessor :sending_myself_term
 
     # called from unicorn config (usually config/unicorn.rb)
     # high level interface to keep setup consistent / simple
@@ -41,13 +42,23 @@ module UnicornWrangler
         end
 
         @hooks[:after_fork] = ->(*) do
-          Signal.trap :TERM do
-            Thread.new { logger.info 'worker intercepting TERM and doing nothing. Wait for master to send QUIT' }
+          # Signal.trap returns the trap that unicorn set, which is an exit!(0) and calls that when sending myself term
+          previous_trap = Signal.trap :TERM do
+            if sending_myself_term
+              previous_trap.call
+            else
+              Thread.new { logger.info 'worker intercepting TERM and doing nothing. Wait for master to send QUIT' }
+            end
           end
         end
       end
 
       Unicorn::HttpServer.prepend UnicornExtension
+    end
+
+    def kill_worker
+      self.sending_myself_term = true # no need to clean up since we are dead after
+      Process.kill(:TERM, Process.pid)
     end
 
     # called from the unicorn server after each request
@@ -116,7 +127,7 @@ module UnicornWrangler
 
       report_status "Killing", reason, memory, requests, request_time
 
-      Process.kill(:TERM, Process.pid)
+      UnicornWrangler.kill_worker
     end
 
     # expensive, do not run on every request
