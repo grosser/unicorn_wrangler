@@ -52,6 +52,17 @@ Ignoring SIGTERM in the worker prevents the worker from getting killed by other 
 `kill_worker` which is called from the master. To kill a worker from inside the worker use `UnicornWrangler.kill_worker`
 which will disable the trap unicorn_wrangler sets.
 
+In Kubernetes prefer using this if possible:
+
+```yaml
+# allow 3s for new in-flight requests, send QUIT, wait up for graceful shutdown, TERM, wait 2s, KILL
+# see https://kubernetes.io/docs/concepts/workloads/pods/pod/#termination-of-pods
+lifecycle:
+  preStop:
+    exec:
+      command: ["sh", "-c", "sleep 3 && kill -QUIT 1 && sleep"]
+```
+
 ## TODO:
  - support other statsd flavors
 
