@@ -3,6 +3,7 @@
 # - runs GC out of band (does not block requests)
 
 require 'benchmark'
+require 'unicorn_wrangler/rss_reader'
 
 module UnicornWrangler
   STATS_NAMESPACE = 'unicorn'
@@ -130,9 +131,9 @@ module UnicornWrangler
       UnicornWrangler.kill_worker
     end
 
-    # expensive, do not run on every request
+    # RSS memory in MB
     def used_memory
-      `ps -o rss= -p #{Process.pid}`.to_i / 1024
+      RssReader.rss / 1024**2
     end
 
     def report_status(status, reason, memory, requests, request_time)
