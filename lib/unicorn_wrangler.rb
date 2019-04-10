@@ -121,7 +121,7 @@ module UnicornWrangler
         @stats.increment("#{STATS_NAMESPACE}.killed", tags: ["reason:#{reason}"])
 
         @stats.histogram("#{STATS_NAMESPACE}.kill.memory", memory)
-        @stats.histogram("#{STATS_NAMESPACE}.kill.total_requests", requests)
+        @stats.gauge("#{STATS_NAMESPACE}.kill.total_requests", requests)
         @stats.histogram("#{STATS_NAMESPACE}.kill.total_request_time", request_time)
       end
 
