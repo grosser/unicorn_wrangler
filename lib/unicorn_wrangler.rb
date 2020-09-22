@@ -125,7 +125,7 @@ module UnicornWrangler
         @stats.histogram("#{STATS_NAMESPACE}.kill.total_request_time", request_time)
       end
 
-      report_status "Killing", reason, memory, requests, request_time
+      report_status "Killing", reason, memory, requests, request_time, :warn
 
       UnicornWrangler.kill_worker
     end
@@ -135,8 +135,8 @@ module UnicornWrangler
       `ps -o rss= -p #{Process.pid}`.to_i / 1024
     end
 
-    def report_status(status, reason, memory, requests, request_time)
-      @logger.info "#{status} unicorn worker ##{Process.pid} for #{reason}. Requests: #{requests}, Time: #{request_time}, Memory: #{memory}MB"
+    def report_status(status, reason, memory, requests, request_time, log_level = :debug)
+      @logger.send log_level, "#{status} unicorn worker ##{Process.pid} for #{reason}. Requests: #{requests}, Time: #{request_time}, Memory: #{memory}MB"
     end
   end
 
@@ -202,7 +202,7 @@ module UnicornWrangler
         @stats.increment("#{STATS_NAMESPACE}.oobgc.runs")
         @stats.timing("#{STATS_NAMESPACE}.oobgc.time", time)
       end
-      @logger.info "Garbage collecting: took #{time}ms"
+      @logger.debug "Garbage collecting: took #{time}ms"
       true
     end
   end
