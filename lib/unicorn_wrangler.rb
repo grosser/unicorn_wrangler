@@ -8,7 +8,7 @@ module UnicornWrangler
   STATS_NAMESPACE = 'unicorn'
 
   class << self
-    attr_reader :handlers
+    attr_reader :handlers, :requests, :request_time
     attr_accessor :sending_myself_term
 
     # called from unicorn config (usually config/unicorn.rb)
