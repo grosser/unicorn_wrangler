@@ -132,9 +132,9 @@ module UnicornWrangler
       UnicornWrangler.kill_worker
     end
 
-    # RSS memory in MB
+    # RSS memory in MB. Can be expensive, do not run on every request
     def used_memory
-      @rss_reader.rss_mb
+      @rss_reader.rss
     end
 
     def report_status(status, reason, memory, requests, request_time, log_level = :debug)
