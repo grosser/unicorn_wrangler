@@ -1,3 +1,5 @@
+# Read RSS based on the OS we are in. When in linux, we can read the proc status file and parse out
+# the RSS which is much faster than forking+execing ps.
 module UnicornWrangler
   class RssReader
     LINUX = RbConfig::CONFIG['host_os'].start_with?('linux')
