@@ -28,13 +28,14 @@ module UnicornWrangler
     # Fork/exec ps and parse result.
     # Should work on any system with POSIX ps.
     # ~4ms
-    def rss_posix(pid = Process.pid)
+    # returns kb but we want b
+    def rss_posix(pid)
       `#{PS_CMD % [pid]}`.to_i * 1024
     end
 
     # Read from /proc/$pid/status.  Linux only.
     # ~100x faster and doesn't incur significant memory cost.
-    def rss_linux(pid = Process.pid)
+    def rss_linux(pid)
       if line = File.read("/proc/#{pid}/status").lines.find { |l| l.start_with?('VmRSS') }
         _,c,u = line.chomp.split
 
