@@ -122,9 +122,9 @@ module UnicornWrangler
       if @stats
         @stats.increment("#{STATS_NAMESPACE}.killed", tags: ["reason:#{reason}"])
 
-        @stats.histogram("#{STATS_NAMESPACE}.kill.memory", memory)
-        @stats.histogram("#{STATS_NAMESPACE}.kill.total_requests", requests)
-        @stats.histogram("#{STATS_NAMESPACE}.kill.total_request_time", request_time)
+        @stats.distribution("#{STATS_NAMESPACE}.kill.memory", memory)
+        @stats.distribution("#{STATS_NAMESPACE}.kill.total_requests", requests)
+        @stats.distribution("#{STATS_NAMESPACE}.kill.total_request_time", request_time)
       end
 
       report_status "Killing", reason, memory, requests, request_time, :warn
@@ -156,7 +156,7 @@ module UnicornWrangler
       if memory > @max
         kill :memory, memory, requests, request_time
       else
-        @stats.histogram("#{STATS_NAMESPACE}.keep.memory", memory) if @stats
+        @stats.distribution("#{STATS_NAMESPACE}.keep.memory", memory) if @stats
         report_status "Keeping", :memory, memory, requests, request_time
       end
     end

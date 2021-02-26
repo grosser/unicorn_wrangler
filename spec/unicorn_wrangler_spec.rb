@@ -250,7 +250,7 @@ describe UnicornWrangler do
     it "does not kill on too little memory" do
       expect(wrangler).to receive(:used_memory).and_return(0)
       expect(wrangler).to_not receive(:kill)
-      expect(stats).to receive(:histogram)
+      expect(stats).to receive(:distribution)
       wrangler.call(250, 100)
     end
 
@@ -305,7 +305,7 @@ describe UnicornWrangler do
     describe "#kill" do
       it "kills a process" do
         expect(stats).to receive(:increment)
-        expect(stats).to receive(:histogram).exactly(3)
+        expect(stats).to receive(:distribution).exactly(3)
 
         expect(Process).to receive(:kill).with(:TERM, Process.pid)
         wrangler.send(:kill, :foobar, 1, 2, 3)
