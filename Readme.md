@@ -73,5 +73,4 @@ Author
 ======
 [Michael Grosser](http://grosser.it)<br/>
 michael@grosser.it<br/>
-License: MIT<br/>
-[![Build Status](https://travis-ci.org/grosser/unicorn_wrangler.png)](https://travis-ci.org/grosser/unicorn_wrangler)
+License: MIT

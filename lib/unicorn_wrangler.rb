@@ -26,7 +26,7 @@ module UnicornWrangler
       logger.info "Sending stats to under #{stats.namespace}.#{STATS_NAMESPACE}" if stats
       @handlers = []
       @handlers << RequestKiller.new(logger, stats, kill_after_requests) if kill_after_requests
-      @handlers << OutOfMemoryKiller.new(logger, stats, kill_on_too_much_memory) if kill_on_too_much_memory
+      @handlers << OutOfMemoryKiller.new(logger, stats, **kill_on_too_much_memory) if kill_on_too_much_memory
       @handlers << OutOfBandGC.new(logger, stats, gc_after_request_time) if gc_after_request_time
 
       @hooks = {}

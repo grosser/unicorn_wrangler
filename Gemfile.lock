@@ -6,28 +6,28 @@ PATH
 GEM
   remote: https://rubygems.org/
   specs:
-    bump (0.6.0)
-    diff-lcs (1.3)
-    dogstatsd-ruby (3.3.0)
-    kgio (2.11.2)
+    bump (0.10.0)
+    diff-lcs (1.5.0)
+    dogstatsd-ruby (5.4.0)
+    kgio (2.11.4)
     rack (2.2.3)
-    raindrops (0.19.0)
-    rake (12.3.1)
-    rspec (3.7.0)
-      rspec-core (~> 3.7.0)
-      rspec-expectations (~> 3.7.0)
-      rspec-mocks (~> 3.7.0)
-    rspec-core (3.7.1)
-      rspec-support (~> 3.7.0)
-    rspec-expectations (3.7.0)
+    raindrops (0.20.0)
+    rake (13.0.6)
+    rspec (3.11.0)
+      rspec-core (~> 3.11.0)
+      rspec-expectations (~> 3.11.0)
+      rspec-mocks (~> 3.11.0)
+    rspec-core (3.11.0)
+      rspec-support (~> 3.11.0)
+    rspec-expectations (3.11.0)
       diff-lcs (>= 1.2.0, < 2.0)
-      rspec-support (~> 3.7.0)
-    rspec-mocks (3.7.0)
+      rspec-support (~> 3.11.0)
+    rspec-mocks (3.11.1)
       diff-lcs (>= 1.2.0, < 2.0)
-      rspec-support (~> 3.7.0)
-    rspec-support (3.7.1)
-    single_cov (1.0.1)
-    unicorn (5.4.0)
+      rspec-support (~> 3.11.0)
+    rspec-support (3.11.0)
+    single_cov (1.7.0)
+    unicorn (6.1.0)
       kgio (~> 2.6)
       raindrops (~> 0.7)
 
@@ -45,4 +45,4 @@ DEPENDENCIES
   unicorn_wrangler!
 
 BUNDLED WITH
-   2.1.4
+   2.3.11
